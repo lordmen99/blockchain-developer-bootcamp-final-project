@@ -40,4 +40,4 @@ Inspiration: [Wheel of Fortune](https://www.youtube.com/watch?v=mx88JHgfink)
 - Smart Contracts
 - Responsibe Web Design
 - Probability & Game Theory
-- Blockchain Basics (the advanced implementation will also be a learning opportunity)
+- Blockchain Fundamentals (the advanced implementation will also be a learning opportunity)
