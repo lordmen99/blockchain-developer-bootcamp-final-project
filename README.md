@@ -13,7 +13,7 @@ Inspiration: [Wheel of Fortune](https://www.youtube.com/watch?v=mx88JHgfink)
   6. Player moves up or down the leaderboard based on in-game token balance
   7. If player runs out of in-game tokens player can buy more tokens with ETH (or maybe Polygon - need to learn more about L2)
 
-#### Advanced Implementation (if Time Allows)
+#### Advanced Implementation (Reach Goal)
 
   1. Game randomly generates a hidden word or phrase related to blockchain  
   2. Player spins the wheel each turn to guess a letter (or player can choose to guess the entire answer).`y` in-game tokens are deducted for each spin
