@@ -1,57 +1,71 @@
 # Final Project Idea
+## Gas Lottery
+The goal of the Gas Lottery is to give Ethereum users a chance to make back some of the money they've spent on gas fees.  
 
-Category: Social Media
-Inspiration: MySpace
+The Gas Lottery is a betting game in which registered users can bet what the price of gas will be in GWEI at a specific time. 
 
+Each user wagers the amount they are willing to bet and all wagers are pooled. The winner who correctly guess the gas price will receive 90%* of the reward pool with 10%* going towards paying gas to get the price data from the oracle. If multiple users correctly guess the gas price the reward pool will equally split amongst all parties.  
+
+Winners will also be given the option to donate a portion of their winnings to the Gas Lottery community pool which will randomly select a user who hasn't won to receive a small donation.  
+
+*Amounts may be adjusted depending on the gas estimation for oracle calls.
 #### Workflow
 
   1. User connects their MetaMask wallet to register  
    ```
-    function registerUser (address _user)  {
-        // registers user 
-      } 
+  function registerUser (address _user)  {
+    // registers user 
+  } 
    ``` 
-  2. User's NFTs are displayed in a gallery on their profile
+  2. UI Displays the current balance of the lottery pool
    
    ```
-    function getNftData (address _user)  {
-        /* get off-chain data from oracle 
-        to pass to UI */
-      } 
+  function getContractBalance (address _contract)  {
+    /* get balance of the Contract account */
+  } 
    ``` 
-  3. Users can add each other as friends
+  3. UI displays a countdown to the next drawing
    
   ```
-  function addFriend (address _user)  {
-          /* add _user to Friends[] */
-      }
+  function nextDraw ()  {
+    /* countdown until next drawing time */
+  }
   ``` 
-
-  4. Users can offer and accept trades with friends
+  4. UI displays a countdown to the deadline to buy a ticket for the next drawing
    ```
-    function offerTrade (address _user, uint _give, uint _receive) 
-      verifyFriend {
-          /* offer to give tokenID of _give 
-          in exchange for tokenID of _receive */
-    }
+  function countdownDeadline () {
+    /* countdown to deadline to buy tickets for next drawing */
+  }
   ``` 
+  5. User places a bet by entering their gas price prediction and # of tickets to buy
   ```
-    function acceptTrade (address _user, uint _receive, uint _give) 
-      verifyFriend {
-          /* send _give , receive _receive */
+  function buyLottoTicket (uint gasPrediction, uint ticketCount, ) {
+    /* user enters their gas price prediction and the #
+        of tickets they want to buy. Each ticket costs x ETH */
+  }
+  ``` 
+  5. Wagered amount from user is calculated & added to the Lottery Pool
+  ```
+    function updateBalance (address contract, uint ticketCount) 
+      /* balance += (ticketCount *= ticketCost) */
     }
   ``` 
 
-  5. Users can send gifts to friends
-```
-    function giftFriend (address _user, uint _give) 
-      verifyFriend {
-          /* send _give to verified friend */
+  6. Contract gets gas price from Oracle for the time specified in the drawing
+  ```  
+    function getGasPrice (time) {
+      /* get gas price for the given time */
     }
-  ``` 
-
-
-#### Advanced Implementation (Reach Goal)
-  7. User's timeline shows friend activity (ex. "Dinah just added Bad Kid #726 from the Bad Kids Alley collection to her gallery.)
-  8. NFT ranking stats - leaderboard shows NFT likes total in descending order
-  9. Users can bet on floor prices with friends. Winner gets the total amount wagered
+  ```
+  7. Contract searches ticket submissions to select winners that guessed the correct price
+   ``` 
+   function selectWinners (price) {
+     /* generate list of winners who submitted correct price prediction
+   }
+   ```
+  8. Evenly distribute lottery pool to winner(s)
+   ```
+   function distributeWinnings(winners) {
+     \* distribute winnings to distinct addresses in winner pool */
+   }
+   ```
