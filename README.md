@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Final Project Idea: Savings App
 Category: DeFi
 #### Workflow

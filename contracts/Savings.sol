@@ -65,7 +65,7 @@ contract Savings {
     return (users[msg.sender].balance);
   }
 
-  function withdraw(uint withdrawAmount)
+  function withdrawTo(address payable _user, uint withdrawAmount)
     public
     payable
     returns (uint) 
