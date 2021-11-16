@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Final Project Idea: Savings App
 Category: DeFi
 #### Workflow
@@ -15,3 +16,4 @@ Goal: User can deposit and withdraw funds.
      a. If x < min : swap for stablecoins
         i. Monitor price of x's token to swap back once x > min
      b. If x > max : add max - x to liquidity pool to earn rewards
+=======
