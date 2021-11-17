@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+//import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Savings {
 
@@ -72,11 +72,15 @@ contract Savings {
   {
     require(users[msg.sender].balance >= withdrawAmount, "Insufficient funds");
     
+    _user = payable(msg.sender);
     users[msg.sender].balance -= withdrawAmount;
+    _user.transfer(withdrawAmount);
+    
+    // Reset timestamp and increment withdrawal account
     users[msg.sender].timestamp = 0;
     users[msg.sender].withdrawalCount++;
     
-    // TODO: safe transfer
+   
 
     emit LogWithdrawal(msg.sender, withdrawAmount, users[msg.sender].balance);
     return withdrawAmount;

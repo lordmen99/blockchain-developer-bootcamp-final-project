@@ -9,9 +9,23 @@ contract("Savings", accounts => {
   });
 
   describe("Variables", () => {
-    it("should have an owner", () => {});
+    it("should have an owner", () => {
+      assert.equal(typeof instance.owner, 'function', 'the contract has no owner');
+    });
 
     describe("User struct", () => {
+      let userStruct;
+      
+      // TODO create test-helper to deconstruct User struct props
+      
+      // before(() => {
+      //   userStruct = Savings.structs.User;
+      //   assert(
+      //     userStruct !== null,
+      //     "The contract should define an Struct called User"
+      //   );
+      // });
+
       it("should have an `enrolled` member", () => {});
       it("should have `balance` member", () => {});
       it("should have `timestamp` member", () => {});
