@@ -1,5 +1,5 @@
-const Savings = artifacts.require("Savings");
+const Gringotts = artifacts.require("Gringotts");
 
 module.exports = function(deployer) {
-  deployer.deploy(Savings);
+  deployer.deploy(Gringotts);
 }

@@ -1,12 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-//import "@openzeppelin/contracts/access/Ownable.sol";
-
-contract Savings {
-
-  address public owner = msg.sender;
-
+contract Gringotts {
   struct User {
     bool enrolled;
     uint balance;
@@ -20,13 +15,14 @@ contract Savings {
   event LogNewUser(address accountAddress);
   event LogDeposit(address accountAddress, uint depositAmount);
   event LogWithdrawal(address accountAddress,uint withdrawalAmount, uint updatedBalance);
-
+  event LogBalance(uint balance);
+  
   // function () external payable {
   //     revert();
   // }
 
   function addUser() 
-    public 
+    public
   {
     require(!users[msg.sender].enrolled, "User is enrolled");
 
@@ -57,7 +53,7 @@ contract Savings {
     users[msg.sender].balance += msg.value;
     users[msg.sender].depositCount++;
 
-    if(users[msg.sender].depositCount == 1 && users[msg.sender].withdrawalCount == 0) {
+    if(users[msg.sender].depositCount == 1) {
       users[msg.sender].timestamp = block.timestamp;
     }
 
@@ -65,14 +61,14 @@ contract Savings {
     return (users[msg.sender].balance);
   }
 
-  function withdrawTo(address payable _user, uint withdrawAmount)
+  function withdraw(uint withdrawAmount)
     public
     payable
     returns (uint) 
   {
     require(users[msg.sender].balance >= withdrawAmount, "Insufficient funds");
     
-    _user = payable(msg.sender);
+    address payable _user = payable(msg.sender);
     users[msg.sender].balance -= withdrawAmount;
     _user.transfer(withdrawAmount);
     
@@ -80,9 +76,8 @@ contract Savings {
     users[msg.sender].timestamp = 0;
     users[msg.sender].withdrawalCount++;
     
-   
-
     emit LogWithdrawal(msg.sender, withdrawAmount, users[msg.sender].balance);
-    return withdrawAmount;
+    return users[msg.sender].balance;
   }
+
 }
