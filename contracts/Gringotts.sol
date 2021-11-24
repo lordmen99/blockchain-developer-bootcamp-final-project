@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract Gringotts {
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+
+contract Gringotts is Ownable, Pausable {
   struct User {
     bool enrolled;
     uint balance;
     uint timestamp;
-    uint withdrawalCount;
-    uint depositCount;
   }
 
   mapping (address => User) private users;
@@ -16,22 +17,27 @@ contract Gringotts {
   event LogDeposit(address accountAddress, uint depositAmount);
   event LogWithdrawal(address accountAddress,uint withdrawalAmount, uint updatedBalance);
   event LogBalance(uint balance);
-  
-  // function () external payable {
-  //     revert();
-  // }
+
+  modifier isNewUser() {
+    require(!users[msg.sender].enrolled, "User is already enrolled");
+    _;
+  }
+
+  modifier hasFunds(uint withdrawalAmount) {
+    require(users[msg.sender].balance >= withdrawalAmount, "Insufficient funds");
+    _;
+    
+  }
 
   function addUser() 
     public
+    isNewUser
   {
-    require(!users[msg.sender].enrolled, "User is enrolled");
-
+    
     users[msg.sender] = User ({
       enrolled: true,
       balance: 0,
       timestamp: 0,
-      withdrawalCount: 0,
-      depositCount: 0
     });
 
     emit LogNewUser(msg.sender);
@@ -45,39 +51,64 @@ contract Gringotts {
     return users[msg.sender].balance;
   }
 
+  function getTimestamp() 
+    public
+    view
+    returns(uint)
+  {
+    return users[msg.sender].timestamp;
+  }
+
+  function isEnrolled()
+    public
+    view
+    returns(bool)
+    {
+      return users[msg.sender].enrolled;
+    }
+
   function deposit() 
     public
     payable
     returns (uint)
   {
-    users[msg.sender].balance += msg.value;
-    users[msg.sender].depositCount++;
-
-    if(users[msg.sender].depositCount == 1) {
+    if(users[msg.sender].timestamp == 0) {
       users[msg.sender].timestamp = block.timestamp;
     }
+
+    users[msg.sender].balance += msg.value;
 
     emit LogDeposit(msg.sender, msg.value);
     return (users[msg.sender].balance);
   }
 
-  function withdraw(uint withdrawAmount)
+  function withdraw(uint withdrawalAmount)
     public
     payable
+    hasFunds(withdrawalAmount)
     returns (uint) 
   {
-    require(users[msg.sender].balance >= withdrawAmount, "Insufficient funds");
-    
     address payable _user = payable(msg.sender);
-    users[msg.sender].balance -= withdrawAmount;
-    _user.transfer(withdrawAmount);
+    users[msg.sender].balance -= withdrawalAmount;
     
     // Reset timestamp and increment withdrawal account
     users[msg.sender].timestamp = 0;
-    users[msg.sender].withdrawalCount++;
+
+    _user.transfer(withdrawalAmount);
     
-    emit LogWithdrawal(msg.sender, withdrawAmount, users[msg.sender].balance);
+    emit LogWithdrawal(msg.sender, withdrawalAmount, users[msg.sender].balance);
     return users[msg.sender].balance;
   }
 
+  /// @notice Pause the contract 
+  /// @dev Circuit breaker pattern
+  function pause() public onlyOwner {
+      Pausable._pause();
+  }
+
+  /// @notice Resume the contract for both reads and writes
+  /// @dev Circuit breaker pattern
+  function unpause() public onlyOwner {
+      Pausable._unpause();
+  }
 }

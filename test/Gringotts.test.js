@@ -42,7 +42,23 @@ contract("Gringotts", accounts => {
       assert.equal(Number(balanceB2), Number(balanceB1) + amount, "incorrect balance after deposit");
     });
 
-    it("should emit a LogDeposit event after a deposit is made", () => {});
+    it("should emit a LogDeposit event after a deposit is made", async () => {
+      const amount = 1E18;
+      await instance.addUser( { from: bathilda } );
+      const deposit = await instance.deposit( { from: bathilda, value: amount} );
+      
+      let eventEmitted = false;
+
+      if (deposit.logs[0].event == "LogDeposit") {
+        eventEmitted = true;
+      }
+
+      assert.equal(
+        eventEmitted,
+        true,
+        "should log a new deposit",
+      );
+    });
 
     it("should let a user withdraw funds and update their balance", async () => {
       const depositAmount = web3.utils.toWei('2','ether');
@@ -62,5 +78,22 @@ contract("Gringotts", accounts => {
       assert.equal(Number(balanceA3), Number(balanceA2) - withdrawAmount, "incorrect balance after withdrawal")
     });
 
+    it("should emit a LogWithdrawal event after a withdrawal is made", async () => {
+      const amount = web3.utils.toWei('1','ether');
+      await instance.addUser( { from: bathilda } );
+      await instance.deposit( { from: bathilda, value: amount} );
+      const withdrawal = await instance.withdraw(amount, { from: bathilda})
+      let eventEmitted = false;
+
+      if (withdrawal.logs[0].event == "LogWithdrawal") {
+        eventEmitted = true;
+      }
+
+      assert.equal(
+        eventEmitted,
+        true,
+        "should log a new deposit",
+      );
+    });
   });
 });

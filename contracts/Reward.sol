@@ -8,10 +8,9 @@ contract Reward is ERC721URIStorage {
   using Counters for Counters.Counter;
   Counters.Counter private _tokenIds;
 
-  constructor() public ERC721("Rewards", "GRINGOTTS") {
-    
-  }
+  constructor() public ERC721("Rewards", "GRINGOTTS") {}
 
+  
   // @param tokenURI = json url for NFT https://jsonkeeper.com/
   function claimReward(string memory tokenURI)
     public
