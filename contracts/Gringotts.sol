@@ -49,8 +49,8 @@ contract Gringotts is Ownable, Pausable {
     emit LogNewUser(msg.sender);
   }
 
-  function deposit() public payable returns (uint)
-  {
+  function deposit() public payable returns (uint) {
+    
     if(users[msg.sender].timestamp == 0) {
       users[msg.sender].timestamp = block.timestamp;
     }
