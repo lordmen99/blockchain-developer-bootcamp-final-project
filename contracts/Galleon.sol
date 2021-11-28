@@ -5,6 +5,6 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Galleon is ERC20 {
   constructor() ERC20("Galleons", "GAL") {
-    _mint(msg.sender, 10000);
+    _mint(msg.sender, 1000000000);
   }
 }

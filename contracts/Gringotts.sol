@@ -7,97 +7,70 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Gringotts is Ownable, Pausable {
   
-  IERC20 private _galleon;
-  struct User {
-    bool enrolled;
-    uint balance;
-    uint timestamp;
-    uint galleons;
-  }
+  IERC20 private galleon;
 
-  mapping (address => User) private users;
+  mapping (address => uint) private balances;
+  mapping (address => uint) private timestamp;
+  
 
-  event LogNewUser(address _accountAddress);
   event LogDeposit(address _accountAddress, uint _depositAmount);
   event LogWithdrawal(address _accountAddress,uint _withdrawalAmount, uint _updatedBalance);
-  event LogBalance(uint _balance);
-  event LogMintTokens(address _to, uint _galleons);
 
-  constructor (IERC20 galleon) {
-    _galleon = galleon;
+  constructor (IERC20 _galleon) {
+    galleon = _galleon;
   }
 
-  modifier isNewUser() {
-    require(!users[msg.sender].enrolled, "User is already enrolled");
-    _;
-  }
-
-  modifier hasFunds(uint withdrawalAmount) {
-    require(users[msg.sender].balance >= withdrawalAmount, "Insufficient funds");
+  modifier hasFunds(uint _amount) {
+    require(balances[msg.sender] >= _amount, "Insufficient funds");
     _; 
   }
 
-  function addUser() public isNewUser {
-    
-    users[msg.sender] = User ({
-      enrolled: true,
-      balance: 0,
-      timestamp: 0,
-      galleons: 0
-    });
-
-    emit LogNewUser(msg.sender);
+  modifier isHodler(address _to) {
+    require((timestamp[_to] - 30 days) < block.timestamp, "Hasn't held funds long enough");
+    _;
   }
 
-  function deposit() public payable returns (uint) {
+  function deposit() public payable {
     
-    if(users[msg.sender].timestamp == 0) {
-      users[msg.sender].timestamp = block.timestamp;
+    if(timestamp[msg.sender] == 0 && balances[msg.sender] == 0) {
+      timestamp[msg.sender] = block.timestamp;
     }
 
-    users[msg.sender].balance += msg.value;
+    balances[msg.sender] += msg.value;
 
     emit LogDeposit(msg.sender, msg.value);
-    return (users[msg.sender].balance);
   }
 
-  function withdraw(uint withdrawalAmount) public payable hasFunds(withdrawalAmount) returns (uint) {
+  function withdraw(uint _amount) public payable hasFunds(_amount) {
     address payable _user = payable(msg.sender);
-    users[msg.sender].balance -= withdrawalAmount;
+    balances[msg.sender] -= _amount;
     
-    // Reset timestamp and increment withdrawal account
-    users[msg.sender].timestamp = 0;
+    // Reset timestamp
+    timestamp[msg.sender] = 0;
 
-    _user.transfer(withdrawalAmount);
+    _user.transfer(_amount);
     
-    emit LogWithdrawal(msg.sender, withdrawalAmount, users[msg.sender].balance);
-    return users[msg.sender].balance;
+    emit LogWithdrawal(msg.sender, _amount, balances[msg.sender]);
   }
 
-  function mintGalleons(uint amount, address _to) external returns(uint) {
-    
-    require(users[_to].timestamp > 0, "No deposits held");
-    
+  function transferGalleonsToContract(uint amount) external onlyOwner {
     address from = msg.sender;
 
-    _galleon.transferFrom(from, _to, amount);
-
-    users[_to].galleons += amount;
-    emit LogMintTokens(_to,amount);
-
-    return users[_to].galleons;
+    galleon.transferFrom(from, address(this), amount);
   }
 
-  function getBalance() public view returns (uint) {
-    return users[msg.sender].balance;
+  function mintGalleonsToUser(address _to) public isHodler(_to) {
+    galleon.transfer( _to, 1000);
+
+    timestamp[_to] = 0;
   }
 
-  function getTimestamp() public view returns(uint) {
-    return users[msg.sender].timestamp;
+  function getBalance() external view returns (uint) {
+    return balances[msg.sender];
   }
 
-  function getGalleons() public view returns(uint) {
-    return users[msg.sender].galleons;
+  function getTimestamp() external view returns(uint) {
+    return timestamp[msg.sender];
   }
 
   /// @notice Pause the contract 
