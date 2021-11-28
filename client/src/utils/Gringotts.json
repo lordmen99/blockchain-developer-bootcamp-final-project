@@ -11851,14 +11851,104 @@
   },
   "networks": {
     "5777": {
-      "events": {},
+      "events": {
+        "0x1b851e1031ef35a238e6c67d0c7991162390df915f70eaf9098dbf0b175a6198": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "_accountAddress",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_depositAmount",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogDeposit",
+          "type": "event"
+        },
+        "0xf9226daf630542048a23086c6af599511aac100ec8f532793cc9697d061bed7e": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "_accountAddress",
+              "type": "address"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_withdrawalAmount",
+              "type": "uint256"
+            },
+            {
+              "indexed": false,
+              "internalType": "uint256",
+              "name": "_updatedBalance",
+              "type": "uint256"
+            }
+          ],
+          "name": "LogWithdrawal",
+          "type": "event"
+        },
+        "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "previousOwner",
+              "type": "address"
+            },
+            {
+              "indexed": true,
+              "internalType": "address",
+              "name": "newOwner",
+              "type": "address"
+            }
+          ],
+          "name": "OwnershipTransferred",
+          "type": "event"
+        },
+        "0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Paused",
+          "type": "event"
+        },
+        "0x5db9ee0a495bf2e6ff9c91a7834c1ba4fdd244a5e8aa4e537bd38aeae4b073aa": {
+          "anonymous": false,
+          "inputs": [
+            {
+              "indexed": false,
+              "internalType": "address",
+              "name": "account",
+              "type": "address"
+            }
+          ],
+          "name": "Unpaused",
+          "type": "event"
+        }
+      },
       "links": {},
-      "address": "0x3a8D3D74dBB46C8c2d3bbE8e13ee6E10dae8c446",
-      "transactionHash": "0x20b9f171405888d24e46c637b18760fa01c2ff6921ae761a15c0af03a1dea50f"
+      "address": "0x9cb6a8D017747b00c41Ec4A3293eF5a46b695240",
+      "transactionHash": "0x230356c4225510b934a61c470624f29528a7dd99ab21f298dfb208856a942496"
     }
   },
   "schemaVersion": "3.4.3",
-  "updatedAt": "2021-11-28T04:37:14.548Z",
+  "updatedAt": "2021-11-28T05:44:44.366Z",
   "networkType": "ethereum",
   "devdoc": {
     "kind": "dev",

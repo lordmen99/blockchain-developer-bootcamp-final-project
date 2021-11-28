@@ -14,11 +14,11 @@ const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const address = "0x3a8D3D74dBB46C8c2d3bbE8e13ee6E10dae8c446";
+  const address = "0x9cb6a8D017747b00c41Ec4A3293eF5a46b695240";
   const abi = gringotts.abi;
   const gringottsContract = new web3.eth.Contract(abi, address);
 
-  const address2 = "0xb0821a54A6891C33C4802E0595D25da579b2078F"
+  const address2 = "0xe587F861ABbD4e60F634cF0790C28FFc77A7d3Fe"
   const abi2 = galleons.abi;
   const galleonsContract = new web3.eth.Contract(abi2, address2);
 
@@ -103,7 +103,7 @@ const App = () => {
       
       let userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then(function (bal){
         return bal});
-      //userGalleonBalance = Number(userGalleonBalance);
+      
       console.log(`Tokens allocated to user ${userGalleonBalance}`);
       setRewards(userGalleonBalance);
 
