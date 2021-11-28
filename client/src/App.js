@@ -14,14 +14,13 @@ const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const address = "0x9cb6a8D017747b00c41Ec4A3293eF5a46b695240";
+  const address = "0x9F919112094d9d46F3b4238407383Ed2bE8F4e1A";
   const abi = gringotts.abi;
   const gringottsContract = new web3.eth.Contract(abi, address);
 
-  const address2 = "0xe587F861ABbD4e60F634cF0790C28FFc77A7d3Fe"
+  const address2 = "0xEf4FfAE06A23f32A869778C0De63BC6411682d7a"
   const abi2 = galleons.abi;
   const galleonsContract = new web3.eth.Contract(abi2, address2);
-
 
   const [currentAccount, setCurrentAccount] = useState("");
   const [connected, setConnected] = useState(false);
@@ -33,27 +32,27 @@ const App = () => {
 
   const connectWallet = async () => {
     try {
+
       const { ethereum } = window;
       if (!ethereum) {
         alert("You need a MetaMask wallet to connect.");
         return;
       }
-
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
-      setCurrentAccount(accounts[0]); 
+      setCurrentAccount(accounts[0]);
+      
       setConnected(true);
 
-      const bal = await gringottsContract.methods.getBalance().call({from: accounts[0]});
-      
-      setBalance(web3.utils.fromWei(bal, 'ether'));
-
     } catch (error) {
-      console.log(error)
+
+      console.log(error);
+
     }
   }
 
   const makeDeposit = async () => {
     try{
+
       const amount = web3.utils.toWei(depositValue,'ether');
       await gringottsContract.methods.deposit().send( {from: currentAccount, value: amount, gasLimit: 300000} );
 
@@ -61,15 +60,21 @@ const App = () => {
       
       setBalance(web3.utils.fromWei(newBal, 'ether'));
       setDepositValue(0);
-      setCount(count+1);
+      
+      if (count === 0) {
+        setCount(count+1);
+      }
 
     } catch(error) {
+
       console.log(error);
+
     }
   }
 
   const makeWithdrawal = async () => { 
     try {
+
       const amount = web3.utils.toWei(withdrawValue,'ether');
       const bal = await gringottsContract.methods.getBalance().call({from: currentAccount});
       
@@ -78,42 +83,33 @@ const App = () => {
 
       const newBal = await gringottsContract.methods.getBalance().call({from: currentAccount});
       setBalance(web3.utils.fromWei(newBal, 'ether'));
+
       setWithdrawValue(0);
       setCount(0);
+
     }catch(error) {
+
       console.log(error);
+
     }  
   }
 
   const claim = async () => {
     try {
 
-      await galleonsContract.methods.increaseAllowance(address, 1000000000).encodeABI();
-  
-      await galleonsContract.methods.transfer(address, 1000).send({from: currentAccount});
-      
-      let bankGalleonBalance = await galleonsContract.methods.balanceOf(address).call()
-      .then( function (bal) {
-          return bal
-        });
-      
-      console.log(`Tokens allocated to bank ${bankGalleonBalance}`);
-
-      await gringottsContract.methods.mintGalleonsToUser(currentAccount);
+      await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( {from: currentAccount });
       
       let userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then(function (bal){
         return bal});
       
-      console.log(`Tokens allocated to user ${userGalleonBalance}`);
       setRewards(userGalleonBalance);
 
     }catch(error) {
+
       console.log(error);
+
     }
   }
-
-
-
 
   return (
     <Container className="p-3">
@@ -174,7 +170,7 @@ const App = () => {
                   variant="primary" 
                   id="button-addon2" 
                   style={{ width: '6rem' }}
-                  disabled={!(count > 0)}
+                  disabled={!(count > 0 || rewards > 0)}
                   onClick={claim}
                 >
                   Claim Rewards
