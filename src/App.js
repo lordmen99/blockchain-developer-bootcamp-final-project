@@ -7,20 +7,20 @@ import InputGroup from 'react-bootstrap/InputGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Web3 from 'web3';
-import gringotts from './utils/Gringotts.json';
-import galleons from './utils/Galleon.json';
+import gringotts from './abis/Gringotts.json';
+import galleons from './abis/Gringotts.json';
 
 const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const address = "0xB56509FC80e02b8f9f23311B10B294CB2745846A";
+  const gringottsAddress = "0xB56509FC80e02b8f9f23311B10B294CB2745846A";
   const abi = gringotts.abi;
-  const gringottsContract = new web3.eth.Contract(abi, address);
+  const gringottsContract = new web3.eth.Contract(abi, gringottsAddress);
 
-  const address2 = "0x633b750f9062CEdad896c2E62B5f79385258F6fE"
+  const galleonsAddress = "0x633b750f9062CEdad896c2E62B5f79385258F6fE"
   const abi2 = galleons.abi;
-  const galleonsContract = new web3.eth.Contract(abi2, address2);
+  const galleonsContract = new web3.eth.Contract(abi2, galleonsAddress);
 
   const [currentAccount, setCurrentAccount] = useState("");
   const [connected, setConnected] = useState(false);
