@@ -1,12 +1,20 @@
+let BN = web3.utils.BN;
 const Gringotts = artifacts.require("Gringotts");
 const Galleon = artifacts.require("Galleon");
 
 module.exports = async function(deployer) {
+  
+  /** Deploys Galleon.sol **/
   await deployer.deploy(Galleon);
   const galleon = await Galleon.deployed();
-  console.log(`Galleon token contract deployed at ${galleon.address}`);
 
+  /** Deploys Gringotts.sol **/
   await deployer.deploy(Gringotts, galleon.address);
   const gringotts = await Gringotts.deployed();
-  console.log(`Gringotts bank contract deployed at ${gringotts.address}`);
+  
+  /** Allocates total supply of ERC20 Galleon tokens to Gringotts.sol  **/
+  const amount = new BN('100000000000000000000000000');
+  await galleon.increaseAllowance(gringotts.address,amount);
+  await gringotts.transferGalleonsToContract(amount);
+
 }

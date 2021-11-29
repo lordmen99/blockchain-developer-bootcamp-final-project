@@ -14,11 +14,11 @@ const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const address = "0x9F919112094d9d46F3b4238407383Ed2bE8F4e1A";
+  const address = "0xB56509FC80e02b8f9f23311B10B294CB2745846A";
   const abi = gringotts.abi;
   const gringottsContract = new web3.eth.Contract(abi, address);
 
-  const address2 = "0xEf4FfAE06A23f32A869778C0De63BC6411682d7a"
+  const address2 = "0x633b750f9062CEdad896c2E62B5f79385258F6fE"
   const abi2 = galleons.abi;
   const galleonsContract = new web3.eth.Contract(abi2, address2);
 
@@ -56,7 +56,7 @@ const App = () => {
       const amount = web3.utils.toWei(depositValue,'ether');
       await gringottsContract.methods.deposit().send( {from: currentAccount, value: amount, gasLimit: 300000} );
 
-      const newBal = await gringottsContract.methods.getBalance().call({from: currentAccount});
+      const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       
       setBalance(web3.utils.fromWei(newBal, 'ether'));
       setDepositValue(0);
@@ -76,12 +76,12 @@ const App = () => {
     try {
 
       const amount = web3.utils.toWei(withdrawValue,'ether');
-      const bal = await gringottsContract.methods.getBalance().call({from: currentAccount});
+      const bal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       
       (bal > amount) ? await gringottsContract.methods.withdraw(amount).send({from: currentAccount})
         : alert("insufficient funds");
 
-      const newBal = await gringottsContract.methods.getBalance().call({from: currentAccount});
+      const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       setBalance(web3.utils.fromWei(newBal, 'ether'));
 
       setWithdrawValue(0);
@@ -96,12 +96,14 @@ const App = () => {
 
   const claim = async () => {
     try {
-
-      await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( {from: currentAccount });
-      
       let userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then(function (bal){
         return bal});
+
+      (userGalleonBalance === 1000) ? alert('User has already claimed their rewards for this year')
+        : await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( {from: currentAccount });
       
+      userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then(function (bal){
+          return bal});
       setRewards(userGalleonBalance);
 
     }catch(error) {

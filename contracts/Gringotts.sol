@@ -4,71 +4,119 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
+ /**
+  /// @title Gringotts Bank Dapp
+  /// @author Dinah Johnson
+  /// @notice You can use this contract for basic DeFi simulations of deposits, withdrawals, and rewarding liquidity providers
+  */
 contract Gringotts is Ownable, Pausable {
-  
+  /// @dev refer to https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20
   IERC20 private galleon;
 
   mapping (address => uint) private balances;
   mapping (address => uint) private timestamp;
   
+  /// @notice You have made a deposit in the Gringotts Bank
+  event LogWeiDeposit(address _accountAddress, uint _depositAmount);
+  
+  /// @notice You have made a withdrawal from the Gringotts Bank
+  event LogWeiWithdrawal(address _accountAddress,uint _withdrawalAmount, uint _updatedBalance);
 
-  event LogDeposit(address _accountAddress, uint _depositAmount);
-  event LogWithdrawal(address _accountAddress,uint _withdrawalAmount, uint _updatedBalance);
-
+  /**
+    @param _galleon the ERC20 token this contract will use
+    @notice After the Galleon contract is deployed the address of the Galleon contract is 
+      passed to the constructor of this bank contract so the bank can use ERC20 tokens
+  */
   constructor (IERC20 _galleon) {
     galleon = _galleon;
   }
 
-  modifier hasFunds(uint _amount) {
-    require(balances[msg.sender] >= _amount, "Insufficient funds");
+  /// @param _amountToWithdrawInWei the amount the user wants to withdraw in Wei
+  /// @notice User must have sufficient funds in their account balance to withdraw their Wei 
+  modifier hasFunds(uint _amountToWithdrawInWei) {
+    require(balances[msg.sender] >= _amountToWithdrawInWei, "Insufficient funds");
     _; 
   }
 
-  modifier isHodler(address _to) {
-    require((timestamp[_to] - 30 days) < block.timestamp, "Hasn't held funds long enough");
+  /// @param _user the user must have an account with a balance in the bank to receive Galleon token rewards
+  /// @param timestamp set to the block timestamp at the time of the user's initial deposit into the bank
+  /** @notice In production the requirement would be for a user to hold a deposit in the bank for >= 1 year:
+      For the purpose of testing this project, the user will receive Galleons for making an initial deposit 
+      without the aforementioned time requirement. 
+  */
+  modifier isHodler(address _user) {
+    /// @dev In production, uncomment line 55 (next line) and delete line 56 (next line + 1)
+      // require((timestamp[_user] + 365 days) >= block.timestamp, "Hasn't held funds longer than 1 year");
+    require((timestamp[_user] - 30 days) < block.timestamp, "Hasn't held funds long enough");
     _;
   }
 
-  function deposit() public payable {
-    
+  /// @notice You have made a deposit to your Gringotts Bank account
+  function deposit() external payable {
+    /// @notice block timestamp is stored for each user on their initial deposit
     if(timestamp[msg.sender] == 0 && balances[msg.sender] == 0) {
       timestamp[msg.sender] = block.timestamp;
     }
 
+    /// @notice updates user's wei balance in their bank account
     balances[msg.sender] += msg.value;
 
-    emit LogDeposit(msg.sender, msg.value);
+    /// @notice emits log of the deposit
+    emit LogWeiDeposit(msg.sender, msg.value);
   }
 
-  function withdraw(uint _amount) public payable hasFunds(_amount) {
-    address payable _user = payable(msg.sender);
-    balances[msg.sender] -= _amount;
+  /// @param _amountToWithdrawInWei amount user wishes to withdraw in wei
+  /// @notice You have made a withdrawal from your Gringotts Bank account
+  function withdraw(uint _amountToWithdrawInWei) external payable hasFunds(_amountToWithdrawInWei) {
     
-    // Reset timestamp
+    address payable _user = payable(msg.sender);
+    
+    /// @notice withdrawal amount in wei deducted from user's balance in their bank account
+    balances[msg.sender] -= _amountToWithdrawInWei;
+    
+    /// @notice timestamp for tracking how long user has held a deposit without withdrawing liquidity is reset to 0
     timestamp[msg.sender] = 0;
 
-    _user.transfer(_amount);
+    /// @notice withdrawal amount in wei is transferred to the user's EOA
+    _user.transfer(_amountToWithdrawInWei);
     
-    emit LogWithdrawal(msg.sender, _amount, balances[msg.sender]);
+    /// @notice emits log of the withdrawal
+    emit LogWeiWithdrawal(msg.sender, _amountToWithdrawInWei, balances[msg.sender]);
   }
 
-  function transferGalleonsToContract(uint amount) external onlyOwner {
+  /// @param from the owner
+  /** @notice Allows only the owner of the ERC20 contract Galleon.sol to approve this
+      contract to spend Galleon tokens. 
+  */
+  function transferGalleonsToContract(uint _amountToContractInGalleons) external onlyOwner {
     address from = msg.sender;
 
-    galleon.transferFrom(from, address(this), amount);
+    /// @dev refer to https://forum.openzeppelin.com/t/example-on-how-to-use-erc20-token-in-another-contract/1682
+    /// @notice Transfers Galleon ERC20 token from the owner to this contract so bank
+    galleon.transferFrom(from, address(this), _amountToContractInGalleons);
   }
 
-  function mintGalleonsToUser(address _to) public isHodler(_to) {
-    galleon.transfer( _to, 1000);
+  /// @notice Rewards liquidity providers with Galleon tokens if they hold a deposit in the bank
+  function mintGalleonsToUser(address _user) public isHodler(_user) {
+    /**  @dev In production the isHodler requirement would add the requirement of holding a deposit 
+          for 1 year to receive reward tokens */ 
+    require(galleon.balanceOf(_user) == 0, "User has already claimed rewards");
+    
+    /// @notice allows the bank to transfer 1000 Galleons to an account holder
+    galleon.transfer(_user, 1000 * 10**18);
 
-    timestamp[_to] = 0;
+    /// @notice timestamp for user is reset to 0 once rewards are claimed for the year
+    timestamp[_user] = 0;
   }
 
-  function getBalance() external view returns (uint) {
+  /// @notice Get wei balance in user's account 
+  /// @return returns uint
+  function getWeiBalance() external view returns (uint) {
     return balances[msg.sender];
   }
 
+  /// @notice Get timestamp for how long user has provided liquidity to bank  
+  /// @return returns uint
   function getTimestamp() external view returns(uint) {
     return timestamp[msg.sender];
   }
