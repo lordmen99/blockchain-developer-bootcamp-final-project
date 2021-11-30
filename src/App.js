@@ -8,31 +8,34 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Web3 from 'web3';
 import gringotts from './abis/Gringotts.json';
-import galleons from './abis/Gringotts.json';
+import galleons from './abis/Galleon.json';
+
+import metamask from './images/metamask.png';
+import eth from './images/eth.png';
+import galleon from './images/galleon.png';
 
 const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const gringottsAddress = "0xB56509FC80e02b8f9f23311B10B294CB2745846A";
-  const abi = gringotts.abi;
-  const gringottsContract = new web3.eth.Contract(abi, gringottsAddress);
+  const gringottsAddress = "0x2C1237aA3433932ec7bd5CeceAc8E2F0fD150741";
+  const gringottsABI = gringotts.abi;
+  const gringottsContract = new web3.eth.Contract(gringottsABI, gringottsAddress);
 
-  const galleonsAddress = "0x633b750f9062CEdad896c2E62B5f79385258F6fE"
-  const abi2 = galleons.abi;
-  const galleonsContract = new web3.eth.Contract(abi2, galleonsAddress);
+  const galleonAddress = "0xA3F4e325eAD9Fe1f9D5FCCd3A33A1deEf18D4d71";
+  const galleonABI = galleons.abi;
+  const galleonsContract = new web3.eth.Contract(galleonABI, galleonAddress);
 
-  const [currentAccount, setCurrentAccount] = useState("");
+  const [currentAccount, setCurrentAccount] = useState('');
   const [connected, setConnected] = useState(false);
   const [balance, setBalance] = useState(0);
-  const [depositValue, setDepositValue] = useState(0);
-  const [withdrawValue, setWithdrawValue] = useState(0);
+  const [depositValue, setDepositValue] = useState('');
+  const [withdrawValue, setWithdrawValue] = useState('');
   const [rewards, setRewards] = useState(0);
-  const [count, setCount] = useState(0);
+  const [available, setAvailable] = useState(false);
 
   const connectWallet = async () => {
     try {
-
       const { ethereum } = window;
       if (!ethereum) {
         alert("You need a MetaMask wallet to connect.");
@@ -40,41 +43,37 @@ const App = () => {
       }
       const accounts = await ethereum.request({ method: "eth_requestAccounts" });
       setCurrentAccount(accounts[0]);
-      
       setConnected(true);
 
+      const ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: accounts[0] } );
+      setBalance(web3.utils.fromWei(ethBalance, 'ether'));
+
+      const userGalleonBalance = await galleonsContract.methods.balanceOf(accounts[0]).call().then((bal) =>bal); 
+      setRewards(web3.utils.fromWei(userGalleonBalance, 'ether'));
+
     } catch (error) {
-
       console.log(error);
-
     }
   }
 
   const makeDeposit = async () => {
     try{
-
       const amount = web3.utils.toWei(depositValue,'ether');
-      await gringottsContract.methods.deposit().send( {from: currentAccount, value: amount, gasLimit: 300000} );
+      await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount, gasLimit: 300000 } );
 
-      const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
+      const ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
       
-      setBalance(web3.utils.fromWei(newBal, 'ether'));
-      setDepositValue(0);
-      
-      if (count === 0) {
-        setCount(count+1);
-      }
+      setBalance( web3.utils.fromWei(ethBalance, 'ether') );
+      setDepositValue('');
+      setAvailable(true);
 
     } catch(error) {
-
       console.log(error);
-
     }
   }
 
   const makeWithdrawal = async () => { 
     try {
-
       const amount = web3.utils.toWei(withdrawValue,'ether');
       const bal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       
@@ -84,8 +83,7 @@ const App = () => {
       const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       setBalance(web3.utils.fromWei(newBal, 'ether'));
 
-      setWithdrawValue(0);
-      setCount(0);
+      setWithdrawValue('');
 
     }catch(error) {
 
@@ -96,50 +94,57 @@ const App = () => {
 
   const claim = async () => {
     try {
-      let userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then(function (bal){
-        return bal});
+      let userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then((bal) =>bal);
+      userGalleonBalance = web3.utils.fromWei(userGalleonBalance.toString(), 'ether');
 
-      (userGalleonBalance === 1000) ? alert('User has already claimed their rewards for this year')
-        : await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( {from: currentAccount });
-      
-      userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then(function (bal){
-          return bal});
-      setRewards(userGalleonBalance);
-
-    }catch(error) {
-
+      if (parseInt(userGalleonBalance) >= 1000) {
+        alert('User has already claimed their rewards for this year');
+        setAvailable(false);
+        return;
+      } 
+      else {
+        await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( { from: currentAccount });
+        userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then((bal) => bal);
+        setRewards(web3.utils.fromWei(userGalleonBalance, 'ether'));
+      }
+    } catch(error) {
       console.log(error);
-
     }
   }
 
   return (
     <Container className="p-3">
       <Container >
-        <Row className="justify-content-sm-center mb-5">
-          <Col sm={8}></Col>
-            <Col sm={4}>
-              <Button bg-primary="true" onClick={connectWallet}>{currentAccount ? `${currentAccount}` : "Connect Wallet"}</Button>
+        <Row className="justify-content-sm-end mb-5">
+          <Col sm={{ span: 6, offset: 3 }}></Col>
+            <Col sm={{ span: 3, offset: 2 }}>
+              <Button bg-primary="true" style={{ width: '12rem' }}
+              onClick={ connectWallet }> <img src={metamask} height='32' alt="Metamask Logo"/>{ currentAccount ? 
+              ` ${currentAccount.slice(0, 6)}......${currentAccount.slice(currentAccount.length - 4, currentAccount.length)}` 
+              : " Connect Wallet" }
+              
+              </Button>
             </Col>
         </Row>
         <Row>
           <Col sm={12}>
-            <Card className="p-2 m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
-              <Card.Body>Balance: {balance} ETH</Card.Body>
+            <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
+            <Card.Header>Account Balance</Card.Header>
+              <Card.Body>{ balance } ETH <img src={eth} height='32' alt="Ether Logo"/></Card.Body>
               <InputGroup className="mb-3 p-2">
                 <FormControl
                   placeholder="Amount (ETH)"
                   aria-label="Amount (ETH)"
                   aria-describedby="basic-addon2"
-                  value={depositValue}
-                  onChange={e => setDepositValue(e.target.value)}
+                  value={ depositValue }
+                  onChange={ e => setDepositValue(e.target.value) }
                 />
                 <Button 
                   variant="outline-primary" 
                   id="button-addon2" 
                   style={{ width: '6rem' }} 
-                  onClick={makeDeposit}
-                  disabled={!connected}
+                  onClick={ makeDeposit }
+                  disabled={ !connected }
                 >
                   Deposit
                 </Button>
@@ -149,14 +154,14 @@ const App = () => {
                   placeholder="Amount (ETH)"
                   aria-label="Amount (ETH)"
                   aria-describedby="basic-addon2"
-                  value={withdrawValue}
-                  onChange={e => setWithdrawValue(e.target.value)}/>
+                  value={ withdrawValue }
+                  onChange={ e => setWithdrawValue(e.target.value) }/>
                 <Button 
                   variant="outline-secondary" 
                   id="button-addon2" 
                   style={{ width: '6rem' }}
                   disabled={!(balance > 0)}
-                  onClick={makeWithdrawal}
+                  onClick={ makeWithdrawal }
                 >
                   Withdraw
                 </Button>
@@ -166,18 +171,21 @@ const App = () => {
         </Row>
         <Row>
         <Col sm={12}>
-            <Card className="p-2 m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
-              <Card.Body>Balance: {rewards} Galleons</Card.Body>
-                <Button 
+            <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
+              <Card.Header>Claimed Rewards</Card.Header>
+              <Card.Body>
+                <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Ether Logo"/></Card.Text>
+                <Button className="mb-3"
                   variant="primary" 
                   id="button-addon2" 
                   style={{ width: '6rem' }}
-                  disabled={!(count > 0 || rewards > 0)}
-                  onClick={claim}
+                  disabled={!(available)}
+                  onClick={ claim }
                 >
-                  Claim Rewards
+                  { available ? 'Claim Rewards' : 'Claimed' }
                 </Button>
-            </Card>
+              </Card.Body>
+            </Card> 
           </Col>
         </Row>
       </Container>
