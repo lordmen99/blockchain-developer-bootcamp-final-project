@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
  /**
   /// @title Gringotts Bank Dapp
   /// @author Dinah Johnson
   /// @notice You can use this contract for basic DeFi simulations of deposits, withdrawals, and rewarding liquidity providers
   */
-contract Gringotts is Ownable, Pausable {
+contract Gringotts is Ownable, Pausable, ReentrancyGuard {
   /// @dev refer to https://docs.openzeppelin.com/contracts/2.x/api/token/erc20#IERC20
   IERC20 private galleon;
 
@@ -47,13 +48,18 @@ contract Gringotts is Ownable, Pausable {
   modifier isHodler(address _user) {
     /// @dev In production, uncomment line 55 (next line) and delete line 56 (next line + 1)
       // require((timestamp[_user] + 365 days) >= block.timestamp, "Hasn't held funds longer than 1 year");
-    require((timestamp[_user] - 30 days) < block.timestamp, "Hasn't held funds long enough");
+    require((timestamp[_user] - 1 days) < block.timestamp, "Hasn't held funds long enough");
     _;
   }
 
   /// @notice You have made a deposit to your Gringotts Bank account
-  function deposit() external payable {
-    /// @notice block timestamp is stored for each user on their initial deposit
+  function deposit() 
+    external 
+    payable 
+    nonReentrant 
+  {
+    require(msg.value > 0, "Must deposit at least 1 wei");
+    /// @notice HODL time initiated at current block.timestamp
     if(timestamp[msg.sender] == 0 && balances[msg.sender] == 0) {
       timestamp[msg.sender] = block.timestamp;
     }
@@ -66,8 +72,13 @@ contract Gringotts is Ownable, Pausable {
   }
 
   /// @param _amountToWithdrawInWei amount user wishes to withdraw in wei
-  /// @notice You have made a withdrawal from your Gringotts Bank account
-  function withdraw(uint _amountToWithdrawInWei) external payable hasFunds(_amountToWithdrawInWei) {
+  /// @notice You must have sufficient funds in your account balance to make a withdrawal
+  function withdraw(uint _amountToWithdrawInWei) 
+    external 
+    payable 
+    hasFunds(_amountToWithdrawInWei) 
+    nonReentrant 
+  {
     
     address payable _user = payable(msg.sender);
     
@@ -78,8 +89,8 @@ contract Gringotts is Ownable, Pausable {
     timestamp[msg.sender] = 0;
 
     /// @notice withdrawal amount in wei is transferred to the user's EOA
-    _user.transfer(_amountToWithdrawInWei);
-    
+    (bool success, ) = _user.call{value:_amountToWithdrawInWei}("");
+    require(success, "Transfer failed.");
     /// @notice emits log of the withdrawal
     emit LogWeiWithdrawal(msg.sender, _amountToWithdrawInWei, balances[msg.sender]);
   }
@@ -88,7 +99,10 @@ contract Gringotts is Ownable, Pausable {
   /** @notice Allows only the owner of the ERC20 contract Galleon.sol to approve this
       contract to spend Galleon tokens. 
   */
-  function transferGalleonsToContract(uint _amountToContractInGalleons) external onlyOwner {
+  function transferGalleonsToContract(uint _amountToContractInGalleons) 
+    external 
+    onlyOwner 
+  {
     address from = msg.sender;
 
     /// @dev refer to https://forum.openzeppelin.com/t/example-on-how-to-use-erc20-token-in-another-contract/1682
@@ -97,15 +111,19 @@ contract Gringotts is Ownable, Pausable {
   }
 
   /// @notice Rewards liquidity providers with Galleon tokens if they hold a deposit in the bank
-  function mintGalleonsToUser(address _user) public isHodler(_user) {
+  function mintGalleonsToUser(address _user) 
+    public 
+    isHodler(_user)
+    nonReentrant
+  {
     /**  @dev In production the isHodler requirement would add the requirement of holding a deposit 
           for 1 year to receive reward tokens */ 
     require(galleon.balanceOf(_user) == 0, "User has already claimed rewards");
     
-    /// @notice allows the bank to transfer 1000 Galleons to an account holder
+    /// @notice Bank transfer 1000 Galleons (ERC20 token) to an account holder
     galleon.transfer(_user, 1000 * 10**18);
 
-    /// @notice timestamp for user is reset to 0 once rewards are claimed for the year
+    /// @notice Timestamp for user is reset to 0 once rewards are claimed for the year
     timestamp[_user] = 0;
   }
 
@@ -123,13 +141,19 @@ contract Gringotts is Ownable, Pausable {
 
   /// @notice Pause the contract 
   /// @dev Circuit breaker pattern
-  function pause() public onlyOwner {
+  function pause() 
+    public 
+    onlyOwner 
+  {
     Pausable._pause();
   }
 
   /// @notice Resume the contract for both reads and writes
   /// @dev Circuit breaker pattern
-  function unpause() public onlyOwner {
+  function unpause() 
+    public 
+    onlyOwner 
+  {
     Pausable._unpause();
   }
 }

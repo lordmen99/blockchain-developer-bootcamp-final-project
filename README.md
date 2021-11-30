@@ -24,7 +24,7 @@ project
 
 ```
 ## Installation
-### Clone this repository  
+#### Clone this repository  
 `git clone https://github.com/cybergirldinah/blockchain-developer-bootcamp-final-project`
 
 #### Install Depedencies  

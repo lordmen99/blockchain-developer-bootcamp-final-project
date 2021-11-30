@@ -6,6 +6,8 @@ import FormControl from 'react-bootstrap/FormControl';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Loader from "react-loader-spinner";
+
 import Web3 from 'web3';
 import gringotts from './abis/Gringotts.json';
 import galleons from './abis/Galleon.json';
@@ -18,11 +20,11 @@ const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const gringottsAddress = "0xA290AFf8063619B1EDe36cEC0f20DE363649ec26";
+  const gringottsAddress = "0x5e4a77466Ba717Ad4decF3294B760Fb3DFAAADF2";
   const gringottsABI = gringotts.abi;
   const gringottsContract = new web3.eth.Contract(gringottsABI, gringottsAddress);
 
-  const galleonAddress = "0xA3F4e325eAD9Fe1f9D5FCCd3A33A1deEf18D4d71";
+  const galleonAddress = "0x0F6bC0b12a22a466DE8f7bCB85968c46e94d2CB3";
   const galleonABI = galleons.abi;
   const galleonsContract = new web3.eth.Contract(galleonABI, galleonAddress);
 
@@ -33,6 +35,7 @@ const App = () => {
   const [withdrawValue, setWithdrawValue] = useState('');
   const [rewards, setRewards] = useState(0);
   const [available, setAvailable] = useState(false);
+  const [isLoading, setLoading] = useState(false);
 
   const connectWallet = async () => {
     try {
@@ -61,11 +64,15 @@ const App = () => {
       const amount = web3.utils.toWei(depositValue,'ether');
       await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount, gasLimit: 300000 } );
 
+      setLoading(true);
+
       const ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
       
       setBalance( web3.utils.fromWei(ethBalance, 'ether') );
+
       setDepositValue('');
       setAvailable(true);
+      setTimeout(setLoading(), 5000);
 
     } catch(error) {
       console.log(error);
@@ -80,10 +87,13 @@ const App = () => {
       (bal > amount) ? await gringottsContract.methods.withdraw(amount).send({from: currentAccount})
         : alert("insufficient funds");
 
+      setLoading(true);
+      
       const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       setBalance(web3.utils.fromWei(newBal, 'ether'));
 
       setWithdrawValue('');
+      setTimeout(setLoading(), 5000);
 
     }catch(error) {
 
@@ -128,45 +138,60 @@ const App = () => {
         </Row>
         <Row>
           <Col sm={12}>
-            <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
-            <Card.Header>Account Balance</Card.Header>
-              <Card.Body>{ balance } ETH <img src={eth} height='32' alt="Ether Logo"/></Card.Body>
-              <InputGroup className="mb-3 p-2">
-                <FormControl
-                  placeholder="Amount (ETH)"
-                  aria-label="Amount (ETH)"
-                  aria-describedby="basic-addon2"
-                  value={ depositValue }
-                  onChange={ e => setDepositValue(e.target.value) }
-                />
-                <Button 
-                  variant="outline-primary" 
-                  id="button-addon2" 
-                  style={{ width: '6rem' }} 
-                  onClick={ makeDeposit }
-                  disabled={ !connected }
-                >
-                  Deposit
-                </Button>
-              </InputGroup>
-              <InputGroup className="mb-3 p-2">
-                <FormControl
-                  placeholder="Amount (ETH)"
-                  aria-label="Amount (ETH)"
-                  aria-describedby="basic-addon2"
-                  value={ withdrawValue }
-                  onChange={ e => setWithdrawValue(e.target.value) }/>
-                <Button 
-                  variant="outline-secondary" 
-                  id="button-addon2" 
-                  style={{ width: '6rem' }}
-                  disabled={!(balance > 0)}
-                  onClick={ makeWithdrawal }
-                >
-                  Withdraw
-                </Button>
-              </InputGroup>
-            </Card>
+              {isLoading 
+              ? <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
+                  <Loader
+                      type="Puff"
+                      color="#00BFFF"
+                      height={100}
+                      width={100}
+                      timeout={3000} //3 secs
+                    />
+                </Card>
+              : 
+              <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
+                <Card.Header>Account Balance</Card.Header>
+                  <Card.Body>{ balance } ETH <img src={eth} height='32' alt="Ether Logo"/></Card.Body>
+                    <InputGroup className="mb-3 p-2">
+                      <FormControl
+                        placeholder="Amount (ETH)"
+                        aria-label="Amount (ETH)"
+                        aria-describedby="basic-addon2"
+                        value={ depositValue }
+                        onChange={ e => setDepositValue(e.target.value) }
+                      />
+                      <Button 
+                        variant="success"
+                        id="button-addon2" 
+                        style={{ width: '6rem' }} 
+                        onClick={ makeDeposit }
+                        disabled={ !connected }
+                      >
+                        Deposit
+                      </Button>
+                    </InputGroup>
+                    <InputGroup className="mb-3 p-2">
+                      <FormControl
+                        placeholder="Amount (ETH)"
+                        aria-label="Amount (ETH)"
+                        aria-describedby="basic-addon2"
+                        value={ withdrawValue }
+                        onChange={ e => setWithdrawValue(e.target.value) }/>
+                      <Button 
+                        variant="secondary"
+                        id="button-addon2" 
+                        style={{ width: '6rem' }}
+                        disabled={!(balance > 0)}
+                        onClick={ makeWithdrawal }
+                      >
+                        Withdraw
+                      </Button>
+                    </InputGroup>
+              </Card>
+              }
+            
+            
+            
           </Col>
         </Row>
         <Row>
@@ -176,13 +201,17 @@ const App = () => {
               <Card.Body>
                 <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Ether Logo"/></Card.Text>
                 <Button className="mb-3"
-                  variant="primary" 
+                  variant="success" 
                   id="button-addon2" 
-                  style={{ width: '6rem' }}
+                  size="lg"
                   disabled={!(available)}
                   onClick={ claim }
                 >
-                  { available ? 'Claim Rewards' : 'Claimed' }
+
+                  { (!available && rewards === 0 ) ? 'Deposit to Earn Rewards' 
+                     : (!available && rewards === '1000' ) ? 'Claimed'
+                     : 'Claim Rewards'
+                  }
                 </Button>
               </Card.Body>
             </Card> 
