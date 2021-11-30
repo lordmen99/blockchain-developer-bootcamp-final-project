@@ -20,11 +20,11 @@ const App = () => {
   // Replace localhost with Infura link once deployed to Rinkeby
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
-  const gringottsAddress = "0x5e4a77466Ba717Ad4decF3294B760Fb3DFAAADF2";
+  const gringottsAddress = "0x36095798B6cc9eD99Bd28c5B4250A37E3e1eFAa5";
   const gringottsABI = gringotts.abi;
   const gringottsContract = new web3.eth.Contract(gringottsABI, gringottsAddress);
 
-  const galleonAddress = "0x0F6bC0b12a22a466DE8f7bCB85968c46e94d2CB3";
+  const galleonAddress = "0x580631591d98f8BBE4e81811CfFA0443eD251DA6";
   const galleonABI = galleons.abi;
   const galleonsContract = new web3.eth.Contract(galleonABI, galleonAddress);
 
