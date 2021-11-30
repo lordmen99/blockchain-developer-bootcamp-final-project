@@ -17,7 +17,7 @@ import eth from './images/eth.png';
 import galleon from './images/galleon.png';
 
 const App = () => {
-  // Replace localhost with Infura link once deployed to Rinkeby
+
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
 
   const gringottsAddress = "0x36095798B6cc9eD99Bd28c5B4250A37E3e1eFAa5";
@@ -63,7 +63,7 @@ const App = () => {
     try{
       setLoading(true);
       const amount = web3.utils.toWei(depositValue,'ether');
-      await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount, gasLimit: 300000 } );
+      await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount, gasLimit: 300000 } , setLoading(false));
 
       const ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
       
@@ -71,7 +71,6 @@ const App = () => {
 
       setDepositValue('');
       setAvailable(true);
-      setTimeout(setLoading(), 3000);
 
     } catch(error) {
       console.log(error);
@@ -80,7 +79,6 @@ const App = () => {
 
   const makeWithdrawal = async () => { 
     try {
-      setLoading(true);
       const amount = web3.utils.toWei(withdrawValue,'ether');
       const bal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       
