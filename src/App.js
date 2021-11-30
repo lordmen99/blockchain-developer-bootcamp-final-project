@@ -61,10 +61,9 @@ const App = () => {
 
   const makeDeposit = async () => {
     try{
+      setLoading(true);
       const amount = web3.utils.toWei(depositValue,'ether');
       await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount, gasLimit: 300000 } );
-
-      setLoading(true);
 
       const ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
       
@@ -72,7 +71,7 @@ const App = () => {
 
       setDepositValue('');
       setAvailable(true);
-      setTimeout(setLoading(), 5000);
+      setTimeout(setLoading(), 3000);
 
     } catch(error) {
       console.log(error);
@@ -81,13 +80,14 @@ const App = () => {
 
   const makeWithdrawal = async () => { 
     try {
+      setLoading(true);
       const amount = web3.utils.toWei(withdrawValue,'ether');
       const bal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       
       (bal > amount) ? await gringottsContract.methods.withdraw(amount).send({from: currentAccount})
         : alert("insufficient funds");
 
-      setLoading(true);
+      
       
       const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       setBalance(web3.utils.fromWei(newBal, 'ether'));

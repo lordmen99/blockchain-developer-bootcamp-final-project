@@ -1,5 +1,12 @@
 # Final Project: Bank App + ERC20 Token
-***Category***: DeFi
+
+#### Demo 
+
+#### Front End
+[Gringotts Bank](https://gringotts-defi.vercel.app/)
+#### My ETH address & Linked ENS
+`0xbb94F8A45DB40D34aa5a83fc0D33cA25020189e6` | `dinah.eth`
+## Project Structure
 ```
 project
 │   README.md
@@ -24,13 +31,18 @@ project
 
 ```
 ## Installation
+
+#### Requirements
+Please ensure `Truffle v5.4.12` is installed to be able to conduct tests. 
 #### Clone this repository  
 `git clone https://github.com/cybergirldinah/blockchain-developer-bootcamp-final-project`
 
-#### Install Depedencies  
+#### Install Dependencies
+Dependencies are stored in the `package.json` file. From the main project folder run:
 `npm install`  
 
-#### truffle-config.js settings for testing
+#### Set up truffle-config.js settings
+Set the port to `7545` and networkID to `5777`:
 ```
 development: {
      host: "127.0.0.1",     
@@ -38,20 +50,19 @@ development: {
      network_id: "5777",       
     }
 ```
-#### Truffle Test in Development Mode  
+#### Truffle Test in Development Mode
+In the main project folder run:
 `truffle test`
+## Project Description
+Wizards & witches can deposit their magical Ether currency into Gringotts bank for safe keeping. As a reward, Gringotts bank account hodlers will receive 1000 Galleons for making and hodling a deposit. Note that in the near future, before we launch our banking program to the main wizarding network on Ethereum, account hodlers must hodl a deposit for a minimum of 1 year without making any withdrawals to receive the Galleons reward. This will help Gringotts in its effort to create an ETH/GAL liquidity pool to further reward our account hodlers. 
 
-#### Truffle Test On Rinkeby
-`truffle test --network rinkeby`
-### Workflow
-Goal: User can deposit and withdraw funds and receive an ERC20 token reward.
+Here's how our system works:
+#### Workflow
   1. User connects MetaMask wallet
   2. User deposits x ETH in their account
   3. User's balance is updated once transaction is mined 
   4. User is rewarded Galleon tokens for using the protocol
-
-### Future Improvements
-  5. Add a staking contract where users can provide ETH/GAL liquidity
-  6. Add loading state while transactions are being mined (UI)
-  7. Add price feed for ETH
-  8. Allow users to earn more through Compound
+#### Future Improvements
+  1. Add price feed for ETH
+  2. Allow users to earn more through Compound
+  3. Create ETH/GAL liquidity pool on Uniswap
