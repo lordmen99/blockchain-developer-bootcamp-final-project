@@ -94,8 +94,9 @@ const App = () => {
       
       if (bal < amount) {
         alert("insufficient funds");
+        setWithdrawValue('');
       } else {
-        await gringottsContract.methods.withdraw(amount.toString()).send({from: currentAccount}, async function(error, transactonHash) {
+        await gringottsContract.methods.withdraw(amount).send({from: currentAccount}, async function(error, transactonHash) {
           console.log("Submitted transaction with hash: ", transactonHash)
           let transactionReceipt = null
           while (transactionReceipt == null) { // Waiting expectedBlockTime until the transaction is mined
