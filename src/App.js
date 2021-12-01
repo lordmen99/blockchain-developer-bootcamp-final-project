@@ -40,6 +40,7 @@ const App = () => {
   const [rewards, setRewards] = useState(0);
   const [available, setAvailable] = useState(false);
   const [isLoading, setLoading] = useState(false);
+  const [isPending, setPending] = useState(false);
 
   const connectWallet = async () => {
     try {
@@ -127,9 +128,20 @@ const App = () => {
         return;
       } 
       else {
-        await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( { from: currentAccount });
-        userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then((bal) => bal);
-        setRewards(web3.utils.fromWei(userGalleonBalance, 'ether'));
+        await gringottsContract.methods.mintGalleonsToUser(currentAccount).send( { from: currentAccount }, async function(error, transactonHash) {
+          console.log("Submitted transaction with hash: ", transactonHash)
+          let transactionReceipt = null
+          while (transactionReceipt == null) { // Waiting expectedBlockTime until the transaction is mined
+            transactionReceipt = await web3.eth.getTransactionReceipt(transactonHash);
+            setLoading(true)
+            await sleep(expectedBlockTime)
+          }
+          console.log("Transaction receipt: ", transactionReceipt)
+          userGalleonBalance = await galleonsContract.methods.balanceOf(currentAccount).call().then((bal) => bal);
+          setRewards(web3.utils.fromWei(userGalleonBalance, 'ether'));
+          setPending();
+        });
+        
       }
     } catch(error) {
       console.log(error);
@@ -214,19 +226,27 @@ const App = () => {
               <Card.Header>Claimed Rewards</Card.Header>
               <Card.Body>
                 <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Ether Logo"/></Card.Text>
-                <Button className="mb-3"
+                { isPending 
+                  ? <Loader
+                      type="Oval"
+                      color="#00BFFF"
+                      height={80}
+                      width={80}
+                      timeout={15000} //3 secs
+                    />
+                  : <Button className="mb-3"
                   variant="success" 
                   id="button-addon2" 
                   size="lg"
                   disabled={!(available)}
                   onClick={ claim }
                 >
-
                   { (!available && rewards === 0 ) ? 'Deposit to Earn Rewards' 
                      : (!available && rewards === '1000' ) ? 'Claimed'
                      : 'Claim Rewards'
                   }
                 </Button>
+                }
               </Card.Body>
             </Card> 
           </Col>
