@@ -19,6 +19,10 @@ import galleon from './images/galleon.png';
 const App = () => {
 
   const web3 = new Web3(Web3.givenProvider || "http://localhost:7545");
+  const expectedBlockTime = 1000; 
+  const sleep = (milliseconds) => {
+    return new Promise(resolve => setTimeout(resolve, milliseconds))
+  }
 
   const gringottsAddress = "0x36095798B6cc9eD99Bd28c5B4250A37E3e1eFAa5";
   const gringottsABI = gringotts.abi;
@@ -61,17 +65,23 @@ const App = () => {
 
   const makeDeposit = async () => {
     try{
-      setLoading(true);
+      let ethBalance;
       const amount = web3.utils.toWei(depositValue,'ether');
-      await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount, gasLimit: 300000 } , setLoading(false));
-
-      const ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
-      
-      setBalance( web3.utils.fromWei(ethBalance, 'ether') );
-
-      setDepositValue('');
-      setAvailable(true);
-
+      await gringottsContract.methods.deposit().send( { from: currentAccount, value: amount.toString(), gasLimit: 300000 }, async function(error, transactonHash) {
+        console.log("Submitted transaction with hash: ", transactonHash)
+        let transactionReceipt = null
+        while (transactionReceipt == null) { // Waiting expectedBlockTime until the transaction is mined
+          transactionReceipt = await web3.eth.getTransactionReceipt(transactonHash);
+          setLoading(true)
+          await sleep(expectedBlockTime)
+        }
+        console.log("Transaction receipt: ", transactionReceipt)
+        ethBalance = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
+        setBalance( web3.utils.fromWei(ethBalance, 'ether') );
+        setDepositValue('');
+        setAvailable(true);
+        setLoading();
+      });
     } catch(error) {
       console.log(error);
     }
@@ -80,23 +90,28 @@ const App = () => {
   const makeWithdrawal = async () => { 
     try {
       const amount = web3.utils.toWei(withdrawValue,'ether');
-      const bal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
+      let bal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
       
-      (bal > amount) ? await gringottsContract.methods.withdraw(amount).send({from: currentAccount})
-        : alert("insufficient funds");
-
-      
-      
-      const newBal = await gringottsContract.methods.getWeiBalance().call({from: currentAccount});
-      setBalance(web3.utils.fromWei(newBal, 'ether'));
-
-      setWithdrawValue('');
-      setTimeout(setLoading(), 5000);
-
+      if (bal < amount) {
+        alert("insufficient funds");
+      } else {
+        await gringottsContract.methods.withdraw(amount.toString()).send({from: currentAccount}, async function(error, transactonHash) {
+          console.log("Submitted transaction with hash: ", transactonHash)
+          let transactionReceipt = null
+          while (transactionReceipt == null) { // Waiting expectedBlockTime until the transaction is mined
+            transactionReceipt = await web3.eth.getTransactionReceipt(transactonHash);
+            setLoading(true)
+            await sleep(expectedBlockTime)
+          }
+          console.log("Transaction receipt: ", transactionReceipt)
+          bal = await gringottsContract.methods.getWeiBalance().call( { from: currentAccount } );
+          setBalance( web3.utils.fromWei(bal, 'ether') );
+          setWithdrawValue('');
+          setLoading();
+        });
+      }
     }catch(error) {
-
       console.log(error);
-
     }  
   }
 
@@ -137,13 +152,13 @@ const App = () => {
         <Row>
           <Col sm={12}>
               {isLoading 
-              ? <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
+              ? <Card className="m-auto mb-5 text-center p-3" border="primary" style={{ width: '28rem' }}>
                   <Loader
-                      type="Puff"
+                      type="Oval"
                       color="#00BFFF"
-                      height={100}
-                      width={100}
-                      timeout={3000} //3 secs
+                      height={80}
+                      width={80}
+                      timeout={15000} //3 secs
                     />
                 </Card>
               : 
