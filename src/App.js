@@ -133,7 +133,7 @@ const App = () => {
           let transactionReceipt = null
           while (transactionReceipt == null) { // Waiting expectedBlockTime until the transaction is mined
             transactionReceipt = await web3.eth.getTransactionReceipt(transactonHash);
-            setLoading(true)
+            setPending(true)
             await sleep(expectedBlockTime)
           }
           console.log("Transaction receipt: ", transactionReceipt)
