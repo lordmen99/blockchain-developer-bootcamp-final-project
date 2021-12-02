@@ -6,6 +6,8 @@ import FormControl from 'react-bootstrap/FormControl';
 import InputGroup from 'react-bootstrap/InputGroup';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
+import Navbar from 'react-bootstrap/Navbar';
+
 import Loader from "react-loader-spinner";
 
 import Web3 from 'web3';
@@ -15,6 +17,7 @@ import galleons from './abis/Galleon.json';
 import metamask from './images/metamask.png';
 import eth from './images/eth.png';
 import galleon from './images/galleon.png';
+import logo from './images/logo.png';
 
 const App = () => {
 
@@ -151,34 +154,59 @@ const App = () => {
   return (
     <Container className="p-3">
       <Container >
-        <Row className="justify-content-sm-end mb-5">
-          <Col sm={{ span: 6, offset: 3 }}></Col>
-            <Col sm={{ span: 3, offset: 2 }}>
-              <Button bg-primary="true" style={{ width: '12rem' }}
+        <Row className="align-items-sm-center mb-5">
+          <Col sm={{ span: 6}}>
+            <Navbar>
+              <Container>
+                <Navbar.Brand href="#home">
+                <img
+                  src={logo}
+                  height='32'
+                  alt="Gringotts Logo"
+                  className="mx-2 mb-3"
+                />
+                  <span id="title">Gringotts Bank</span>
+                </Navbar.Brand>
+              </Container>
+            </Navbar>
+          </Col>
+            <Col sm={{ span: 3, offset: 3 }}>
+              <Button id="connectBtn" style={{ width: '18rem' }}
               onClick={ connectWallet }> <img src={metamask} height='32' alt="Metamask Logo"/>{ currentAccount ? 
               ` ${currentAccount.slice(0, 6)}......${currentAccount.slice(currentAccount.length - 4, currentAccount.length)}` 
-              : " Connect Wallet" }
+              : " Connect Wallet to Rinkeby" }
               
               </Button>
             </Col>
         </Row>
-        <Row>
+        <Row className="justify-content-sm-center mb-3 text-center">
+          <Col sm={{ span: 6}}>
+            <span id="description">To make deposits and withdrawals, 
+            please connect your Metamask Wallet to the Rinkeby network. You
+            will need some test ETH as well. Try the official <a href="https://faucet.rinkeby.io/">Rinkeby Faucet</a>.</span>
+          </Col>
+        </Row>
+        <Row className="justify-content-sm-center">
           <Col sm={12}>
               {isLoading 
-              ? <Card className="m-auto mb-5 text-center p-3" border="primary" style={{ width: '28rem' }}>
+              ? <Card className="m-auto mb-3 text-center p-3" style={{ width: '32rem' }}>
                   <Loader
                       type="Oval"
-                      color="#00BFFF"
+                      color="#734b6d"
                       height={80}
                       width={80}
                       timeout={15000} //3 secs
                     />
                 </Card>
               : 
-              <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
-                <Card.Header>Account Balance</Card.Header>
+              <Card
+                className="m-auto mb-3 text-center p-3" 
+                style={{ width: '32rem' }}
+                text="light"
+              >
+                <Card.Header><Card.Title>Account Balance</Card.Title></Card.Header>
                   <Card.Body>{ balance } ETH <img src={eth} height='32' alt="Ether Logo"/></Card.Body>
-                    <InputGroup className="mb-3 p-2">
+                    <InputGroup className="mb-2 p-2">
                       <FormControl
                         placeholder="Amount (ETH)"
                         aria-label="Amount (ETH)"
@@ -187,16 +215,16 @@ const App = () => {
                         onChange={ e => setDepositValue(e.target.value) }
                       />
                       <Button 
-                        variant="success"
+                        variant="dark"
                         id="button-addon2" 
-                        style={{ width: '6rem' }} 
+                        style={{ width: '8rem' }} 
                         onClick={ makeDeposit }
                         disabled={ !connected }
                       >
                         Deposit
                       </Button>
                     </InputGroup>
-                    <InputGroup className="mb-3 p-2">
+                    <InputGroup className="mb-2 p-2">
                       <FormControl
                         placeholder="Amount (ETH)"
                         aria-label="Amount (ETH)"
@@ -204,9 +232,9 @@ const App = () => {
                         value={ withdrawValue }
                         onChange={ e => setWithdrawValue(e.target.value) }/>
                       <Button 
-                        variant="secondary"
+                        variant="dark"
                         id="button-addon2" 
-                        style={{ width: '6rem' }}
+                        style={{ width: '8rem' }}
                         disabled={!(balance > 0)}
                         onClick={ makeWithdrawal }
                       >
@@ -214,41 +242,61 @@ const App = () => {
                       </Button>
                     </InputGroup>
               </Card>
-              }
-            
-            
-            
+            }
           </Col>
         </Row>
-        <Row>
+        <Row className="justify-content-sm-center">
         <Col sm={12}>
-            <Card className="m-auto mb-5 text-center" border="primary" style={{ width: '28rem' }}>
-              <Card.Header>Claimed Rewards</Card.Header>
-              <Card.Body>
-                <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Ether Logo"/></Card.Text>
-                { isPending 
-                  ? <Loader
-                      type="Oval"
-                      color="#00BFFF"
-                      height={80}
-                      width={80}
-                      timeout={15000} //3 secs
-                    />
-                  : <Button className="mb-3"
-                  variant="success" 
-                  id="button-addon2" 
-                  size="lg"
-                  disabled={!(available)}
-                  onClick={ claim }
+            { isPending 
+              ? <Card 
+                  className="m-auto mb-2 text-center  p-3" 
+                  style={{ width: '32rem' }}
+                  text="light"
                 >
-                  { (!available && rewards === 0 ) ? 'Deposit to Earn Rewards' 
-                     : (!available && rewards === '1000' ) ? 'Claimed'
-                     : 'Claim Rewards'
-                  }
-                </Button>
-                }
-              </Card.Body>
-            </Card> 
+                  <Loader
+                    type="Oval"
+                    color="#734b6d"
+                    height={80}
+                    width={80}
+                    timeout={18000} //3 secs
+                  />
+                </Card>
+              : <Card 
+                  className="m-auto mb-3 text-center  p-3" 
+                  style={{ width: '32rem' }}
+                  text="light"
+                >
+                  <Card.Header><Card.Title>Rewards</Card.Title></Card.Header>
+                  <Card.Body>
+                    <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Ether Logo"/></Card.Text> 
+                    <Button className="mb-3"
+                        variant="dark" 
+                        id="button-addon2" 
+                        size="lg"
+                        disabled={!(available)}
+                        onClick={ claim }
+                      > 
+                    { (!available && rewards === 0 ) ? 'Deposit to Earn Rewards' 
+                      : (!available && rewards === '1000' ) ? 'Claimed'
+                      : 'Claim Rewards'
+                    }
+                  </Button>
+                  </Card.Body>
+                </Card> 
+            }
+          </Col>
+          </Row>
+          <Row>
+          <Col sm={12}>
+            <Card 
+              id="notice"
+              className="m-auto text-center p-3"  
+              style={{ width: '32rem' }}
+              text="light"    
+            >
+              <Card.Text>To display $GAL in MetaMask open the extension and go to the Assets tab. Select import token then copy and paste the GAL token address: </Card.Text>
+              <Card.Text>0x580631591d98f8BBE4e81811CfFA0443eD251DA6</Card.Text>
+            </Card>
           </Col>
         </Row>
       </Container>

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
-
+import './styles/App.css'
 
 ReactDOM.render(
   <React.StrictMode>
