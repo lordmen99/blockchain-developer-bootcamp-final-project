@@ -40,7 +40,7 @@ project
 
 #### Requirements
 
-Please ensure `Truffle v5.4.12` is installed to be able to conduct tests.
+Please ensure `Truffle v5.4.12` is installed to be able to conduct tests. You will also need to start Ganache to connect to the local blockchain network. If the Gananche network ID is not 5777 please update the correct network ID in the truffle-config.js file on line 9.
 
 #### Clone this repository
 
