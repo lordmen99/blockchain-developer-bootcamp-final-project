@@ -208,7 +208,6 @@ const App = () => {
                         onChange={ e => setDepositValue(e.target.value) }
                       />
                       <Button 
-                        
                         id="primary" 
                         style={{ width: '8rem' }} 
                         onClick={ makeDeposit }
