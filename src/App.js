@@ -159,23 +159,16 @@ const App = () => {
             <Navbar>
               <Container>
                 <Navbar.Brand href="#home">
-                <img
-                  src={logo}
-                  height='32'
-                  alt="Gringotts Logo"
-                  className="mx-2 mb-3"
-                />
                   <span id="title">Gringotts Bank</span>
                 </Navbar.Brand>
               </Container>
             </Navbar>
           </Col>
             <Col sm={{ span: 3, offset: 3 }}>
-              <Button id="connectBtn" style={{ width: '18rem' }}
+              <Button id="connectBtn" style={{ width: '14rem' }}
               onClick={ connectWallet }> <img src={metamask} height='32' alt="Metamask Logo"/>{ currentAccount ? 
               ` ${currentAccount.slice(0, 6)}......${currentAccount.slice(currentAccount.length - 4, currentAccount.length)}` 
-              : " Connect Wallet to Rinkeby" }
-              
+              : " Connect to Rinkeby" }
               </Button>
             </Col>
         </Row>
@@ -215,8 +208,8 @@ const App = () => {
                         onChange={ e => setDepositValue(e.target.value) }
                       />
                       <Button 
-                        variant="dark"
-                        id="button-addon2" 
+                        
+                        id="primary" 
                         style={{ width: '8rem' }} 
                         onClick={ makeDeposit }
                         disabled={ !connected }
@@ -268,9 +261,8 @@ const App = () => {
                 >
                   <Card.Header><Card.Title>Rewards</Card.Title></Card.Header>
                   <Card.Body>
-                    <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Ether Logo"/></Card.Text> 
-                    <Button className="mb-3"
-                        variant="dark" 
+                    <Card.Text>{ rewards } Galleons <img src={galleon} height='32' alt="Galleons Logo"/></Card.Text> 
+                    <Button className="mb-3" id="primary"
                         id="button-addon2" 
                         size="lg"
                         disabled={!(available)}
@@ -286,20 +278,11 @@ const App = () => {
             }
           </Col>
           </Row>
-          <Row>
-          <Col sm={12}>
-            <Card 
-              id="notice"
-              className="m-auto text-center p-3"  
-              style={{ width: '32rem' }}
-              text="light"    
-            >
-              <Card.Text>To display $GAL in MetaMask open the extension and go to the Assets tab. Select import token then copy and paste the GAL token address: </Card.Text>
-              <Card.Text>0x580631591d98f8BBE4e81811CfFA0443eD251DA6</Card.Text>
-            </Card>
-          </Col>
-        </Row>
       </Container>
+      <div id="notice">
+        <p>To display $GAL in MetaMask open the extension and go to the Assets tab. Select import token then copy and paste the GAL token address:</p>
+        <p>0x580631591d98f8BBE4e81811CfFA0443eD251DA6</p>
+      </div>
   </Container>
   );
 }
