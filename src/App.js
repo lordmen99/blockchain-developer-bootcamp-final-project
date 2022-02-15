@@ -27,11 +27,11 @@ const App = () => {
     return new Promise(resolve => setTimeout(resolve, milliseconds))
   }
 
-  const gringottsAddress = "0x36095798B6cc9eD99Bd28c5B4250A37E3e1eFAa5";
+  const gringottsAddress = "0x2A072b489f62aa25678fb6848bdCBE8ABa27959c";
   const gringottsABI = gringotts.abi;
   const gringottsContract = new web3.eth.Contract(gringottsABI, gringottsAddress);
 
-  const galleonAddress = "0x580631591d98f8BBE4e81811CfFA0443eD251DA6";
+  const galleonAddress = "0x136857CBC8342b33293693aCb48433cbbaDE8bef";
   const galleonABI = galleons.abi;
   const galleonsContract = new web3.eth.Contract(galleonABI, galleonAddress);
 
